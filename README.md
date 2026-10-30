@@ -71,13 +71,13 @@ status: baseline ok
 | --- | --- |
 | `make validate` | `claude plugin validate --strict .` checks `plugin.json`, `marketplace.json`, and the plugin's component files |
 | `make sync` | `python scripts/sync/sync-skills.py`, then `python scripts/sync/render-instructions.py` |
-| `make evals` | `claude plugin eval` |
+| `make evals` | `claude plugin eval . --judge-model $(JUDGE_MODEL) --max-cost-usd $(MAX_COST_USD) --no-publish` |
 | `make test` | `pytest scripts/hooks/tests` feeds sample stdin JSON to the hook scripts, without a harness |
 | `make release` | runs the four targets above, then prints the version bump, changelog, and git tag reminder |
 
 A clean `make validate` prints `Validation passed`.
 
-`make evals` runs every case twice: once with the plugin and once without it as a baseline. Pin the judge model and set a cost ceiling, for example `claude plugin eval . --judge-model sonnet --max-cost-usd 3 --no-publish`. Changes are logged in `DEVELOPMENT.md`.
+`make evals` runs every case twice: once with the plugin and once without it as a baseline. It pins the judge model to Sonnet, stops at a $3 cost ceiling, and keeps the report local. Override either value on the command line, for example `make evals JUDGE_MODEL=opus MAX_COST_USD=5`. Changes are logged in `DEVELOPMENT.md`.
 
 ## License
 

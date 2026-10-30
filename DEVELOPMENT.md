@@ -1,5 +1,19 @@
 # Development log
 
+## [2026-10-30 14:41] - CONFIG
+
+### Changes
+- `make evals` now pins the judge model, sets a cost ceiling, and skips publishing the report. The judge defaults to Sonnet and the ceiling to $3. Both can be overridden with `JUDGE_MODEL` and `MAX_COST_USD`.
+
+### Files Modified
+- `Makefile`, `README.md`
+
+### Rationale
+Without `--judge-model`, the judge defaults to Haiku, which is weaker than the model being tested. Without a ceiling, a long suite has no spending limit. These flags make the target safe to run unattended or in CI.
+
+### Breaking Changes
+None
+
 ## [2026-10-30 13:47] - FEATURE
 
 ### Changes
