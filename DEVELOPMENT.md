@@ -1,5 +1,39 @@
 # Development log
 
+## [2026-10-30 16:43] - FEATURE
+
+### Changes
+- Added the `protect_secrets` `PreToolUse` hook. It blocks, with exit code 2 and a reason:
+  - `Read`, `Edit`, `Write`, `MultiEdit`, and `NotebookEdit` on secret files.
+  - `Grep` with a secret path or glob.
+  - `Bash` commands that mention a secret file or dump the environment.
+- Secret files are `.env`, `.env.*`, and `*.env`; `*.pem`, `*.key`, `*.p12`, `*.pfx`, and keystores; `id_rsa` and other SSH keys; `.netrc`, `.pgpass`, `.pypirc`, and `.npmrc`; `credentials` files; and `secrets.*` files.
+- Templates (`.example`, `.sample`, `.template`, `.dist`) are allowed.
+- Unreadable hook input blocks the call (fail closed).
+- Added the `security-reviewer` subagent. It is read-only, with the Read, Grep, Glob, and Bash tools. It looks for secrets, tracked secret files, personal data, leaky artifacts, and git history leaks. It uses gitleaks or trufflehog when installed, and reports redacted findings by severity with fixes.
+- `make test` now runs the hook tests with `unittest`, which pytest can also collect, so they run without third-party packages.
+
+### Files Modified
+- `hooks/hooks.json`, `scripts/hooks/protect_secrets.py`, `scripts/hooks/tests/test_protect_secrets.py`
+- `agents/security-reviewer.md`
+- `Makefile`, `README.md`, `DEVELOPMENT.md`
+
+### Rationale
+A skill can't guarantee the agent stays away from `.env`, but a hook runs on every tool call. Blocking by file name, and by file name inside shell commands, covers the usual paths: `cat`, `rm`, `mv`, `cp`, redirection, `source`, and `--env-file`.
+
+`Glob` stays allowed, because it lists names without contents. That lets the reviewer report that a `.env` exists, and whether it is tracked, without reading it.
+
+The reviewer is a subagent, so it scans with its own context and returns a report, not raw search output.
+
+### Breaking Changes
+- The agent can no longer create `.env` from `.env.example` (`cp .env.example .env`) or run commands with `--env-file .env`. The person runs those commands.
+
+### Known Limits
+- `Grep` over a whole directory isn't blocked, so a broad search can still show lines of an untracked `.env` if ripgrep doesn't skip it. ripgrep skips git-ignored files by default.
+- Commands that build a file name indirectly, such as variables or `find -exec`, aren't detected.
+- `echo .env >> .gitignore` is blocked as a false positive. Edit `.gitignore` with the Edit tool instead.
+- The hook was tested with sample events (12 unittest cases, Python 3.14 in WSL), not yet in a live Claude Code session.
+
 ## [2026-10-30 16:21] - CONFIG
 
 ### Changes

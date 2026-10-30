@@ -22,6 +22,19 @@ The plugin contains four skills:
   - Pydantic schemas validate every request and response.
   - Every variable comes from `.env` through one `Settings` class. Each change that touches a setting shows the full updated `.env.example`.
 
+It also contains one hook and one subagent:
+
+- **`protect_secrets` hook** (`PreToolUse`) blocks the agent from touching secret files. That covers reading, editing, creating, moving, or deleting a file, and grepping into it.
+  - Secret files include `.env` and `.env.*`, private keys and certificates, `credentials` files, `.netrc` and `.npmrc`, and `secrets.*` files.
+  - It also blocks shell commands that mention those files or dump the environment (`printenv`, a bare `env`).
+  - Templates such as `.env.example` stay editable.
+  - A blocked call returns a reason telling the agent to work from `.env.example` and let the person edit `.env`.
+  - The hook needs `python3` on the `PATH` of the shell that Claude Code uses. It is written in Python with no third-party dependencies.
+- **`security-reviewer` subagent** reviews the repository for leaks: API keys, tokens, passwords, private keys, and connection strings; tracked or unignored secret files; and personal data such as usernames, emails, and home-directory paths. It covers notebooks, logs, eval results, and git history.
+  - It reports findings by severity with redacted evidence, fixes, and what it couldn't check.
+  - It never modifies files.
+  - Trigger it by asking for a security review, or with `@security-reviewer`.
+
 ## What the plugin can hold
 
 - Skills, in `skills/`. Each skill is a folder with a `SKILL.md`. Hosts that read Agent Skills load these.
@@ -41,6 +54,10 @@ The plugin contains four skills:
   - `endpoint-pattern.md` has the code for the schema, service, endpoint, category router, app, and test.
   - `settings.md` has `config.py`, `.env.example`, and the test that fails when they drift apart.
 - `evals/<case>/prompt.md` and `evals/<case>/graders/*.md`: eval cases for `claude plugin eval`, named `<skill>-<scenario>`. Run one skill's cases with `--case "<skill>-*"`. Results go to `evals/results/`, which git ignores.
+- `hooks/hooks.json`: registers the `protect_secrets` hook on `Read`, `Edit`, `Write`, `MultiEdit`, `NotebookEdit`, `Grep`, and `Bash`
+- `scripts/hooks/protect_secrets.py`: the hook script. It exits with code 2 and a reason to block a call.
+- `scripts/hooks/tests/test_protect_secrets.py`: sample stdin events for blocked and allowed calls
+- `agents/security-reviewer.md`: the `security-reviewer` subagent
 - `.claude-plugin/plugin.json`: manifest for the Claude Code package
 - `.claude-plugin/marketplace.json`: Claude Code marketplace named `ml-ai-dev-kit`, with this directory as its source
 
@@ -88,7 +105,7 @@ status: baseline ok
 | `make sync` | `python scripts/sync/sync-skills.py`, then `python scripts/sync/render-instructions.py` |
 | `make evals` | `claude plugin eval . --judge-model $(JUDGE_MODEL) --max-cost-usd $(MAX_COST_USD) --no-publish` |
 | `make eval-case CASE=<name or glob>` | `claude plugin eval . --case "$(CASE)"` with the same flags as `make evals`, for example `CASE="fastapi-backend-*"` |
-| `make test` | `pytest scripts/hooks/tests` feeds sample stdin JSON to the hook scripts, without a harness |
+| `make test` | `python3 -m unittest discover -s scripts/hooks/tests -v` feeds sample stdin JSON to the hook scripts, without a harness |
 | `make release` | runs the four targets above, then prints the version bump, changelog, and git tag reminder |
 
 A clean `make validate` prints `Validation passed`.

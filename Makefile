@@ -18,7 +18,7 @@ eval-case:       ## run one eval case (or a glob), e.g. make eval-case CASE=fast
 	claude plugin eval . --case "$(CASE)" --judge-model $(JUDGE_MODEL) --max-cost-usd $(MAX_COST_USD) --no-publish
 
 test:            ## unit-test the hook scripts without Claude (feed them sample stdin JSON)
-	pytest scripts/hooks/tests
+	python3 -m unittest discover -s scripts/hooks/tests -v
 
 release: validate sync evals test
 	@echo "bump version in .claude-plugin/plugin.json, update CHANGELOG.md, then git tag"
