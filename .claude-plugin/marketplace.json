@@ -1,0 +1,14 @@
+{
+  "name": "ai-ml-dev-kit",
+  "description": "AI and ML development plugin with skills, hooks, instructions, and rules for agents and harnesses.",
+  "owner": {
+    "name": "G0rg0ne"
+  },
+  "plugins": [
+    {
+      "name": "ai-ml-dev-kit",
+      "source": "./",
+      "description": "AI and ML development plugin with skills, hooks, instructions, and rules for agents and harnesses."
+    }
+  ]
+}
