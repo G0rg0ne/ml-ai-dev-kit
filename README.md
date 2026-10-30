@@ -4,14 +4,23 @@ Plugin for AI and ML development. Version 0.1.0. Author: G0rg0ne.
 
 It can carry skills, hooks, instructions, and rules. A harness loads the pieces it understands. That includes Claude Code, Cursor, GitHub Copilot, and other hosts.
 
-The plugin contains two skills:
+The plugin contains four skills:
 
 - `hello` checks that a harness loaded the plugin.
-- `python-dev-conventions` sets up and maintains Python projects with the author's conventions:
-  - It asks whether to use a Docker or a uv environment before creating one.
-  - It uses loguru with its own config module, which sets each level's color and the date and time format.
-  - It formats the code with ruff.
-  - It keeps every test in one top-level `tests/` folder.
+- `dev-kickoff` creates the folder structure of a new project. It supports three types: an app with a frontend and a backend, a standalone service, or an ML and data science project with notebooks and scripts.
+  - It always asks whether to use Docker or uv only, unless the request already says.
+  - It applies a modular layout: `core/` for settings and logging, `services/` for business logic, `schemas/`, `adapters/`, thin entry points, and one `tests/` folder.
+  - With Docker, it adds a `Dockerfile` that installs with uv, a `compose.yaml` for each project type, and a `.dockerignore`.
+- `python-dev-conventions` applies the coding conventions in an existing project:
+  - Logging uses loguru with its own config module, which sets each level's color and the date and time format.
+  - Code is formatted with ruff.
+  - Every test lives in one top-level `tests/` folder.
+  - Commands run in the project's own environment.
+- `fastapi-backend` builds backends with FastAPI:
+  - Each endpoint is its own file with its own router.
+  - Each category, such as `/payment` or `/model`, has a router that includes its endpoints.
+  - Pydantic schemas validate every request and response.
+  - Every variable comes from `.env` through one `Settings` class. Each change that touches a setting shows the full updated `.env.example`.
 
 ## What the plugin can hold
 
@@ -25,7 +34,13 @@ The plugin contains two skills:
 - `skills/hello/SKILL.md`: the `hello` skill
 - `skills/python-dev-conventions/SKILL.md`: the `python-dev-conventions` skill
 - `skills/python-dev-conventions/references/loguru-config.md`: the house loguru module, level colors, and time format
-- `evals/<case>/prompt.md` and `evals/<case>/graders/*.md`: eval cases for `claude plugin eval`. Results go to `evals/results/`, which git ignores.
+- `skills/dev-kickoff/SKILL.md`: the `dev-kickoff` skill
+- `skills/dev-kickoff/references/`: `app.md`, `service.md`, and `ml-project.md` hold the tree for each project type, and `docker.md` holds the Docker files
+- `skills/fastapi-backend/SKILL.md`: the `fastapi-backend` skill
+- `skills/fastapi-backend/references/`:
+  - `endpoint-pattern.md` has the code for the schema, service, endpoint, category router, app, and test.
+  - `settings.md` has `config.py`, `.env.example`, and the test that fails when they drift apart.
+- `evals/<case>/prompt.md` and `evals/<case>/graders/*.md`: eval cases for `claude plugin eval`, named `<skill>-<scenario>`. Run one skill's cases with `--case "<skill>-*"`. Results go to `evals/results/`, which git ignores.
 - `.claude-plugin/plugin.json`: manifest for the Claude Code package
 - `.claude-plugin/marketplace.json`: Claude Code marketplace named `ml-ai-dev-kit`, with this directory as its source
 
@@ -72,6 +87,7 @@ status: baseline ok
 | `make validate` | `claude plugin validate --strict .` checks `plugin.json`, `marketplace.json`, and the plugin's component files |
 | `make sync` | `python scripts/sync/sync-skills.py`, then `python scripts/sync/render-instructions.py` |
 | `make evals` | `claude plugin eval . --judge-model $(JUDGE_MODEL) --max-cost-usd $(MAX_COST_USD) --no-publish` |
+| `make eval-case CASE=<name or glob>` | `claude plugin eval . --case "$(CASE)"` with the same flags as `make evals`, for example `CASE="fastapi-backend-*"` |
 | `make test` | `pytest scripts/hooks/tests` feeds sample stdin JSON to the hook scripts, without a harness |
 | `make release` | runs the four targets above, then prints the version bump, changelog, and git tag reminder |
 

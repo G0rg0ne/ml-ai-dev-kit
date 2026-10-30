@@ -1,4 +1,4 @@
-.PHONY: validate sync evals test release
+.PHONY: validate sync evals eval-case test release
 
 JUDGE_MODEL ?= sonnet
 MAX_COST_USD ?= 3
@@ -12,6 +12,10 @@ sync:            ## regenerate .agents/skills, .cursor/skills, .github/skills, C
 
 evals:           ## run the eval suite against the skills, with and without the plugin
 	claude plugin eval . --judge-model $(JUDGE_MODEL) --max-cost-usd $(MAX_COST_USD) --no-publish
+
+eval-case:       ## run one eval case (or a glob), e.g. make eval-case CASE=fastapi-backend-new-endpoint
+	@test -n "$(CASE)" || { echo "usage: make eval-case CASE=<case name or glob>"; exit 1; }
+	claude plugin eval . --case "$(CASE)" --judge-model $(JUDGE_MODEL) --max-cost-usd $(MAX_COST_USD) --no-publish
 
 test:            ## unit-test the hook scripts without Claude (feed them sample stdin JSON)
 	pytest scripts/hooks/tests

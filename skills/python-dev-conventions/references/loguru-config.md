@@ -1,6 +1,6 @@
 # Loguru configuration
 
-The house logging setup. Copy the module below into `src/<package>/logging_config.py` and adapt only the package name, unless the person asks for other colors or formats.
+The house logging setup. Copy the module below into `src/<package>/core/logging_config.py` (or `shared/logging_config.py` in an app with a frontend and a backend) and adapt only the package name, unless the person asks for other colors or formats.
 
 ## House style
 
@@ -98,7 +98,7 @@ def setup_logging(level: str | None = None, log_file: str | None = None) -> None
 
 ```python
 # entry point, for example src/<package>/__main__.py
-from <package>.logging_config import setup_logging
+from <package>.core.logging_config import setup_logging
 
 setup_logging()
 ```
