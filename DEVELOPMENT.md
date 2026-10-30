@@ -1,5 +1,85 @@
 # Development log
 
+## [2026-10-30 17:40] - CONFIG
+
+### Changes
+- Set the plugin version to `0.2.0` in `.claude-plugin/plugin.json`.
+- Renamed `[Unreleased]` in `CHANGELOG.md` to `[0.2.0] - 2026-10-30` and opened a new empty `[Unreleased]` section.
+- Updated the version line in `README.md`.
+
+### Files Modified
+- `.claude-plugin/plugin.json`, `CHANGELOG.md`, `README.md`, `DEVELOPMENT.md`
+
+### Rationale
+Everything since 0.1.0 adds components: three skills, a hook, a subagent, evals, and docs. That makes it a minor bump under the 0.x policy in the README. Claude Code only delivers an update once this version changes.
+
+### Breaking Changes
+None for users of 0.1.0, which contained only the `hello` skill.
+
+### Next Steps
+- Run the full eval suite with `make evals MAX_COST_USD=7`, commit, tag with `claude plugin tag .`, and push.
+
+## [2026-10-30 17:26] - DOCS
+
+### Changes
+- `README.md` describes the kit as general-purpose. The Claude Code plugin is one delivery channel.
+- Added a host support table: skills work everywhere, while the hook, subagent, and evals are wired for Claude Code only so far.
+- Install and update steps are now split between Claude Code and other hosts. For Cursor (`.cursor/skills/`), GitHub Copilot (`.github/skills/`), and Codex (`.agents/skills/`), the skill folders are copied by hand until `make sync` publishes them.
+- `.claude/CLAUDE.md` states the same scope and adds a host-neutrality convention:
+  - Skills and agent prompts contain no host-only instructions.
+  - Host wiring stays in each host's packaging.
+  - Hook logic stays in scripts that can be reused.
+- Regenerated `AGENTS.md`.
+
+### Files Modified
+- `README.md`, `.claude/CLAUDE.md`, `AGENTS.md`, `CHANGELOG.md`, `DEVELOPMENT.md`
+
+### Rationale
+The previous docs called the kit a Claude Code plugin, which contradicted its purpose. The support table states what each host gets today, so users of other hosts know the hook and subagent are not active for them yet.
+
+### Breaking Changes
+None
+
+### Next Steps
+- Publish the skills to each host's folder with `make sync`.
+- Wire `protect_secrets` into Cursor hooks and other hosts' hooks, and port `security-reviewer` to hosts that support subagents.
+
+## [2026-10-30 17:15] - DOCS
+
+### Changes
+- Rewrote `README.md`. It covers:
+  - Purpose and a contents table.
+  - Install and updating to the latest version.
+  - The directory tree, testing and validation, and contributing.
+  - A versioning policy: semantic versioning, what each bump means, a path from `0.x` to `1.0.0`, an optional `-next` channel, and release steps with `claude plugin tag`.
+- Added `.claude/CLAUDE.md`, the instructions for agents working on the kit: structure and purpose, directory layout, conventions, practices for adding skills, hooks, and agents, testing and validation, guidelines, and versioning.
+- Added `AGENTS.md`, generated from `.claude/CLAUDE.md` by `scripts/sync/render-instructions.py`. It has a "generated, do not edit" header, and its `--check` mode reports drift.
+- Added `CHANGELOG.md` in Keep a Changelog format: everything since 0.1.0 is under `[Unreleased]`, planned as 0.2.0.
+- Makefile changes:
+  - `make sync` now only generates `AGENTS.md`. It used to call two scripts that didn't exist.
+  - `make validate` also runs the drift check.
+  - `make test` also runs the sync tests.
+  - `make release` prints the full release steps.
+
+### Files Modified
+- `README.md`, `.claude/CLAUDE.md`, `AGENTS.md`, `CHANGELOG.md`, `DEVELOPMENT.md`, `Makefile`
+- `scripts/sync/render-instructions.py`, `scripts/sync/tests/test_render_instructions.py`
+
+### Rationale
+`CLAUDE.md` lives in `.claude/` because `claude plugin validate --strict` fails on a root `CLAUDE.md`: plugin users never receive it. Claude Code still loads `.claude/CLAUDE.md` as project context in this repository.
+
+`AGENTS.md` is generated rather than hand-copied, so the two files can't drift apart silently.
+
+`CHANGELOG.md` is for users, one section per release. `DEVELOPMENT.md` stays the detailed log for maintainers.
+
+### Breaking Changes
+- `make sync` no longer claims to publish skills to `.agents/skills`, `.cursor/skills`, or `.github/skills`. That was never implemented.
+
+### Next Steps
+- Release 0.2.0 by following the README release steps.
+- Publish the repository on a git host so users can add the marketplace by address.
+- Implement skill syncing for other hosts if Cursor or Copilot users need it.
+
 ## [2026-10-30 16:43] - FEATURE
 
 ### Changes
