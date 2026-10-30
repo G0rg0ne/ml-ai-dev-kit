@@ -1,4 +1,4 @@
-# ai-ml-dev-kit
+# ml-ai-dev-kit
 
 Plugin for AI and ML development. Version 0.1.0. Author: G0rg0ne.
 
@@ -17,7 +17,7 @@ The plugin contains one skill so far, `hello`. It checks that a harness loaded t
 
 - `skills/hello/SKILL.md`: the `hello` skill
 - `.claude-plugin/plugin.json`: manifest for the Claude Code package
-- `.claude-plugin/marketplace.json`: Claude Code marketplace named `ai-ml-dev-kit`, with this directory as its source
+- `.claude-plugin/marketplace.json`: Claude Code marketplace named `ml-ai-dev-kit`, with this directory as its source
 
 `make sync` publishes skills, instructions, and rules into the folders other hosts read:
 
@@ -40,7 +40,7 @@ claude plugin marketplace add .
 2. Install the plugin:
 
 ```
-/plugin install ai-ml-dev-kit@ai-ml-dev-kit
+/plugin install ml-ai-dev-kit@ml-ai-dev-kit
 ```
 
 ## Check that a harness loaded the plugin
@@ -48,7 +48,7 @@ claude plugin marketplace add .
 Ask for a hello from this plugin. The `hello` skill replies with these three lines and stops:
 
 ```
-hello from ai-ml-dev-kit
+hello from ml-ai-dev-kit
 skill: hello
 status: baseline ok
 ```
