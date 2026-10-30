@@ -4,7 +4,14 @@ Plugin for AI and ML development. Version 0.1.0. Author: G0rg0ne.
 
 It can carry skills, hooks, instructions, and rules. A harness loads the pieces it understands. That includes Claude Code, Cursor, GitHub Copilot, and other hosts.
 
-The plugin contains one skill so far, `hello`. It checks that a harness loaded the plugin.
+The plugin contains two skills:
+
+- `hello` checks that a harness loaded the plugin.
+- `python-dev-conventions` sets up and maintains Python projects with the author's conventions:
+  - It asks whether to use a Docker or a uv environment before creating one.
+  - It uses loguru with its own config module, which sets each level's color and the date and time format.
+  - It formats the code with ruff.
+  - It keeps every test in one top-level `tests/` folder.
 
 ## What the plugin can hold
 
@@ -16,6 +23,9 @@ The plugin contains one skill so far, `hello`. It checks that a harness loaded t
 ## Layout
 
 - `skills/hello/SKILL.md`: the `hello` skill
+- `skills/python-dev-conventions/SKILL.md`: the `python-dev-conventions` skill
+- `skills/python-dev-conventions/references/loguru-config.md`: the house loguru module, level colors, and time format
+- `evals/<case>/prompt.md` and `evals/<case>/graders/*.md`: eval cases for `claude plugin eval`. Results go to `evals/results/`, which git ignores.
 - `.claude-plugin/plugin.json`: manifest for the Claude Code package
 - `.claude-plugin/marketplace.json`: Claude Code marketplace named `ml-ai-dev-kit`, with this directory as its source
 
@@ -66,6 +76,8 @@ status: baseline ok
 | `make release` | runs the four targets above, then prints the version bump, changelog, and git tag reminder |
 
 A clean `make validate` prints `Validation passed`.
+
+`make evals` runs every case twice: once with the plugin and once without it as a baseline. Pin the judge model and set a cost ceiling, for example `claude plugin eval . --judge-model sonnet --max-cost-usd 3 --no-publish`. Changes are logged in `DEVELOPMENT.md`.
 
 ## License
 
