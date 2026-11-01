@@ -8,7 +8,7 @@ description: >
   without naming FastAPI. Do not use for frontend pages or for creating a
   new project from scratch (dev-kickoff).
 metadata:
-  author: "G0rg0ne"
+  author: "Vedasur"
   version: "0.1.0"
   date: "2026-10-30"
 ---

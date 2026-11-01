@@ -8,7 +8,7 @@ description: >
   repository, even without the word structure. Do not use for adding code
   to an existing project (python-dev-conventions).
 metadata:
-  author: "G0rg0ne"
+  author: "Vedasur"
   version: "0.1.0"
   date: "2026-10-30"
 ---

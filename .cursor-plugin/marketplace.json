@@ -1,0 +1,16 @@
+{
+  "name": "ml-ai-dev-kit",
+  "owner": {
+    "name": "Vedasur"
+  },
+  "metadata": {
+    "description": "AI and ML development plugin with skills, hooks, instructions, and rules for agents and harnesses."
+  },
+  "plugins": [
+    {
+      "name": "ml-ai-dev-kit",
+      "source": "./",
+      "description": "AI and ML development plugin with skills, hooks, instructions, and rules for agents and harnesses."
+    }
+  ]
+}

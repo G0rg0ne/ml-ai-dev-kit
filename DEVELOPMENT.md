@@ -1,5 +1,28 @@
 # Development log
 
+## [2026-11-01 19:30] - FEATURE
+
+### Changes
+- Added `.cursor-plugin/plugin.json`: name, version, author, license, and keywords, with `skills` set to `./skills/` and `agents` set to `./agents/`. `hooks` is left out on purpose.
+- Added `.cursor-plugin/marketplace.json` listing the plugin, for team marketplace import.
+- Added `scripts/sync/tests/test_cursor_plugin.py`: the Cursor manifest has the same `name` and `version` as the Claude one, its paths exist inside the repository, every skill folder has a `SKILL.md`, and the marketplace lists the plugin.
+- `README.md`: new *Cursor* install section (local folder for Windows and Unix, team marketplace, public marketplace), a Cursor column in the host support table, a Cursor update note, the new folder in the directory layout, and the second manifest in the release steps.
+- `.claude/CLAUDE.md` mentions the Cursor files in the layout table, host neutrality, and versioning; regenerated `AGENTS.md` with `make sync`.
+
+### Files Modified
+- `.cursor-plugin/plugin.json`, `.cursor-plugin/marketplace.json`, `scripts/sync/tests/test_cursor_plugin.py`, `README.md`, `.claude/CLAUDE.md`, `AGENTS.md`, `CHANGELOG.md`, `DEVELOPMENT.md`
+
+### Rationale
+Cursor reads `.cursor-plugin/plugin.json` and the same `SKILL.md` and agent files, so no skill changed (host neutrality holds). The manifest follows Cursor's plugin reference: only `name` is required, `displayName` does not exist, and paths are relative. The hook is not registered: Cursor's event names (`preToolUse`) and tool names differ from the Claude ones that `protect_secrets.py` checks, so wiring it needs script changes and tests of its own. The version now lives in two manifests; the test prevents drift.
+
+### Breaking Changes
+None.
+
+### Next Steps
+- Install locally in Cursor and check that the three skills and the agent load. The `tools` key in `agents/security-reviewer.md` is Claude Code frontmatter; Cursor's docs do not say whether it ignores unknown keys.
+- Decide whether to wire `protect_secrets` for Cursor with a `hooks/hooks-cursor.json` and tool-name handling in the script.
+- Check that a single-plugin repository imports as a team marketplace; Cursor's docs only describe `marketplace.json` for multi-plugin repositories.
+
 ## [2026-10-30 17:40] - CONFIG
 
 ### Changes

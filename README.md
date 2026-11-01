@@ -1,6 +1,6 @@
 # ml-ai-dev-kit
 
-General-purpose kit for Python, AI, and ML development with coding agents. Version 0.2.0 (see `CHANGELOG.md`). Author: G0rg0ne. License: MIT.
+General-purpose kit for Python, AI, and ML development with coding agents. Version 0.2.0 (see `CHANGELOG.md`). Author: Vedasur. License: MIT.
 
 It carries skills, hooks, agents, and instructions. Each host (Claude Code, Cursor, GitHub Copilot, Codex, and others) loads the pieces it understands. The skills use the open Agent Skills format (`SKILL.md`), so they are not tied to one host; the Claude Code plugin package is one of the delivery channels.
 
@@ -28,12 +28,12 @@ Each skill is measured with evals against a baseline without the kit, so a rule 
 
 ## Host support
 
-| Component | Format | Claude Code | Cursor, GitHub Copilot, Codex, other hosts |
-| --- | --- | --- | --- |
-| Skills | Agent Skills (`SKILL.md`, portable frontmatter only) | Yes, through the plugin | Yes: copy the skill folders into the host's skills folder (below) |
-| `protect_secrets` hook | Python script reading the tool call as JSON; registered in `hooks/hooks.json` | Yes, through the plugin | Not wired yet: each host has its own hook events and registration file |
-| `security-reviewer` agent | `agents/security-reviewer.md` | Yes, as a subagent | Not wired yet; on any host, ask the agent to follow that file as instructions |
-| Evals | `claude plugin eval` | Yes | Measured on Claude Code only |
+| Component | Format | Claude Code | Cursor | GitHub Copilot, Codex, other hosts |
+| --- | --- | --- | --- | --- |
+| Skills | Agent Skills (`SKILL.md`, portable frontmatter only) | Yes, through the plugin | Yes, through the Cursor plugin (`.cursor-plugin/`) | Yes: copy the skill folders into the host's skills folder (below) |
+| `protect_secrets` hook | Python script reading the tool call as JSON; registered in `hooks/hooks.json` | Yes, through the plugin | Not wired yet: Cursor uses other event names and tool names | Not wired yet: each host has its own hook events and registration file |
+| `security-reviewer` agent | `agents/security-reviewer.md` | Yes, as a subagent | Yes, as a subagent through the Cursor plugin | Not wired yet; on any host, ask the agent to follow that file as instructions |
+| Evals | `claude plugin eval` | Yes | Measured on Claude Code only | Measured on Claude Code only |
 
 ## Install
 
@@ -48,13 +48,34 @@ claude plugin install ml-ai-dev-kit@ml-ai-dev-kit
 
 Once the repository is published on a git host, users add it by its address instead of a local path, for example `claude plugin marketplace add <owner>/ml-ai-dev-kit` for GitHub, or the repository's git URL.
 
+### Cursor
+
+The folder `.cursor-plugin/` defines the kit as a Cursor plugin. Its `plugin.json` points Cursor to `skills/` (the three skills) and `agents/` (the `security-reviewer` subagent). The `protect_secrets` hook is not part of the Cursor plugin (see *Host support*), so on Cursor nothing stops the agent from reading `.env`; keep secrets out of the workspace or add your own Cursor hook.
+
+Pick one of the three routes.
+
+**1. Local install, to try the kit now.** Copy or clone the repository into Cursor's local plugins folder, with the plugin manifest at `<folder>/.cursor-plugin/plugin.json`:
+
+| OS | Folder |
+| --- | --- |
+| Windows (PowerShell) | `$env:USERPROFILE\.cursor\plugins\local\ml-ai-dev-kit` |
+| macOS and Linux | `~/.cursor/plugins/local/ml-ai-dev-kit` |
+
+```
+git clone <repository-url> ~/.cursor/plugins/local/ml-ai-dev-kit
+```
+
+Then restart Cursor, or run **Developer: Reload Window** from the command palette. Open **Customize** and check that `ml-ai-dev-kit` appears with its skills and its agent. On a managed Enterprise account, an admin must first allow local plugin imports. Copy the folder instead of symlinking it: Cursor only follows a link whose target stays inside the plugins folder.
+
+If you only want the skills, without the agent, copy `skills/` into `.cursor/skills/` as described in *Other hosts*.
+
 ### Other hosts
 
 Copy the folders under `skills/` into the skills folder your host reads, in your project or in your user folder:
 
 | Host | Project skills folder |
 | --- | --- |
-| Cursor | `.cursor/skills/` |
+| Cursor (without the plugin) | `.cursor/skills/` |
 | GitHub Copilot | `.github/skills/` |
 | Codex and hosts following the `.agents` convention | `.agents/skills/` |
 
@@ -83,6 +104,8 @@ claude plugin update ml-ai-dev-kit@ml-ai-dev-kit
 
 The first command refreshes the marketplace from its source, the second installs the newest version it lists; restart Claude Code to apply it. Claude Code compares the `version` in `plugin.json`, so a change is only delivered once that version is bumped.
 
+**Cursor:** for a local install, run `git pull` (or `git fetch --tags` and `git checkout ml-ai-dev-kit--vX.Y.Z`) inside the plugin folder, then reload the window. A team or public marketplace refreshes by itself; Cursor re-indexes the repository at most every 10 minutes.
+
 **Other hosts:** pull the repository at the latest release tag (`git fetch --tags`, then `git checkout ml-ai-dev-kit--vX.Y.Z`) and copy the skill folders again, replacing the old ones.
 
 ## Directory layout
@@ -92,6 +115,9 @@ ml-ai-dev-kit/
 ├── .claude-plugin/
 │   ├── plugin.json          # Manifest; "version" is the release version
 │   └── marketplace.json     # Marketplace "ml-ai-dev-kit" listing this plugin
+├── .cursor-plugin/
+│   ├── plugin.json          # Cursor manifest; same name and version as the Claude one
+│   └── marketplace.json     # Cursor marketplace listing this plugin
 ├── skills/
 │   ├── dev-kickoff/         # SKILL.md + references/ (app, service, ml-project, docker)
 │   ├── python-dev-conventions/  # SKILL.md + references/loguru-config.md
@@ -128,7 +154,7 @@ Conventions (naming, skill structure, eval and hook rules), the steps to add a s
 | Target | Command | What it checks |
 | --- | --- | --- |
 | `make validate` | `claude plugin validate --strict .`, then `render-instructions.py --check` | Manifests, skills, agents, hooks; `AGENTS.md` up to date. A clean run prints `Validation passed` and `AGENTS.md is up to date.` |
-| `make test` | `python3 -m unittest discover` on `scripts/hooks/tests` and `scripts/sync/tests` | Hook and generator scripts against sample inputs, without Claude |
+| `make test` | `python3 -m unittest discover` on `scripts/hooks/tests` and `scripts/sync/tests` | Hook and generator scripts against sample inputs, and that the Cursor manifest matches the Claude one, without Claude |
 | `make eval-case CASE=<name or glob>` | `claude plugin eval . --case "$(CASE)"` | Selected cases, for example `CASE="fastapi-backend-*"` |
 | `make evals` | `claude plugin eval . --judge-model $(JUDGE_MODEL) --max-cost-usd $(MAX_COST_USD) --no-publish` | Every case, with and without the plugin |
 | `make sync` | `python3 scripts/sync/render-instructions.py` | Regenerates `AGENTS.md` from `.claude/CLAUDE.md` |
@@ -158,7 +184,7 @@ Release steps:
 
 1. Run `make release` (validation, tests, and evals must pass).
 2. In `CHANGELOG.md`, rename `## [Unreleased]` to `## [x.y.z] - YYYY-MM-DD` and open a new empty `## [Unreleased]`.
-3. Set `version` in `.claude-plugin/plugin.json` to `x.y.z`, and update the version line at the top of this file.
+3. Set `version` in `.claude-plugin/plugin.json` and in `.cursor-plugin/plugin.json` to `x.y.z` (`make test` fails if they differ), and update the version line at the top of this file.
 4. Commit, then run `claude plugin tag .` to create the tag `ml-ai-dev-kit--vx.y.z` (it checks that `plugin.json` and the marketplace entry agree).
 5. Push the commit and the tag. Users then get it with the two commands in *Get the latest version*.
 

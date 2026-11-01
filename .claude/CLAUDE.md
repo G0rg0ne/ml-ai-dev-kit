@@ -4,7 +4,7 @@
 
 `ml-ai-dev-kit` is a general-purpose kit for coding agents (Claude Code, Cursor, GitHub Copilot, Codex, and other hosts) that packages one developer's way of building Python, AI, and ML projects: how a project starts (Docker or uv, modular layout), how code is written (loguru, ruff, one `tests/` folder), how backends are built (FastAPI, one router per endpoint, Pydantic, settings from `.env`), and how secrets stay out of the agent's reach. It exists so every agent session applies those choices without the person repeating them, and so each choice is measured by evals instead of assumed.
 
-Skills are the portable core, in the open Agent Skills format. The Claude Code plugin (`.claude-plugin/`, `hooks/hooks.json`, `agents/`) is one delivery channel; other hosts receive the skills by copy into their skills folder.
+Skills are the portable core, in the open Agent Skills format. The Claude Code plugin (`.claude-plugin/`, `hooks/hooks.json`, `agents/`) is one delivery channel; the Cursor plugin (`.cursor-plugin/`) is another and reuses `skills/` and `agents/`; other hosts receive the skills by copy into their skills folder.
 
 This file guides agents that work **on the kit itself**. The kit's components guide agents that work on **other projects**: keep the two apart.
 
@@ -14,6 +14,8 @@ This file guides agents that work **on the kit itself**. The kit's components gu
 | --- | --- |
 | `.claude-plugin/plugin.json` | Plugin manifest; its `version` is the release version |
 | `.claude-plugin/marketplace.json` | Marketplace `ml-ai-dev-kit` that lists this plugin |
+| `.cursor-plugin/plugin.json` | Cursor manifest; `name` and `version` must equal the Claude manifest (`make test` checks it) |
+| `.cursor-plugin/marketplace.json` | Cursor marketplace that lists this plugin |
 | `skills/<name>/SKILL.md` | One skill per folder; detail in `skills/<name>/references/` |
 | `agents/<name>.md` | Subagents (currently `security-reviewer`) |
 | `hooks/hooks.json` | Hook registration; scripts live in `scripts/hooks/` |
@@ -31,7 +33,7 @@ This file guides agents that work **on the kit itself**. The kit's components gu
 
 **Host neutrality**
 - Skills, references, and agent prompts stay host-neutral: no host-only tool names, slash commands, or paths in their instructions, so the same text works on every host.
-- Host-specific wiring (plugin manifests, hook registration, agent frontmatter, future Cursor or Copilot files) lives in that host's packaging, never inside a skill.
+- Host-specific wiring (plugin manifests, hook registration, agent frontmatter, the `.cursor-plugin/` files, future Copilot files) lives in that host's packaging, never inside a skill.
 - Hook logic stays in scripts that read the tool call as JSON, so another host can reuse it with its own registration.
 
 **Skills**
@@ -106,4 +108,4 @@ Do not:
 
 ## Versioning
 
-The plugin follows semantic versioning through `version` in `.claude-plugin/plugin.json`; each skill also carries its own `metadata.version`. While the kit is `0.x`, a minor bump (`0.3.0`) marks new components or changed rules and a patch bump (`0.2.1`) marks fixes. Release steps and the reasoning are in `README.md`, section *Versioning and releases*.
+The plugin follows semantic versioning through `version` in `.claude-plugin/plugin.json`, mirrored in `.cursor-plugin/plugin.json`; each skill also carries its own `metadata.version`. While the kit is `0.x`, a minor bump (`0.3.0`) marks new components or changed rules and a patch bump (`0.2.1`) marks fixes. Release steps and the reasoning are in `README.md`, section *Versioning and releases*.

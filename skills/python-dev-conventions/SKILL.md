@@ -8,7 +8,7 @@ description: >
   format or organize Python code, even without naming loguru or ruff. Do
   not use to create a new project (dev-kickoff) or for non-Python code.
 metadata:
-  author: "G0rg0ne"
+  author: "Vedasur"
   version: "0.2.0"
   date: "2026-10-30"
 ---
